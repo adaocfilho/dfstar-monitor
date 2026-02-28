@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DF Star Hospital | Equipe de Neurologia Brasília | Monitoramento de Pacientes em Tempo Real</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #E75480 0%, #B82E5F 50%, #F5D5E3 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(184, 46, 95, 0.15);
+            text-align: center;
+        }
+
+        header h1 {
+            color: #B82E5F;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #D4849F;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #E75480 0%, #B82E5F 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(184, 46, 95, 0.4);
+        }
+
+        .btn-secondary {
+            background: #F5D5E3;
+            color: #B82E5F;
+            border: 2px solid #D4849F;
+        }
+
+        .btn-secondary:hover {
+            background: #EFC5D8;
+        }
+
+        .btn-danger {
+            background: #D8A8A8;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-danger:hover {
+            background: #C99898;
+        }
+
+        .btn-edit {
+            background: #E75480;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-edit:hover {
+            background: #D64470;
+        }
+
+        .btn-save {
+            background: #D4849F;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-save:hover {
+            background: #C4748F;
+        }
+
+        .btn-cancel {
+            background: #B0B0B0;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-cancel:hover {
+            background: #A0A0A0;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(184, 46, 95, 0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #E75480 0%, #B82E5F 100%);
+            color: white;
+        }
+
+        th {
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #F0E8E0;
+            font-size: 13px;
+        }
+
+        tbody tr:hover {
+            background: #F9E5F0;
+        }
+
+        tbody tr.editing {
+            background: #FEF5F9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #D4849F;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #B82E5F;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #B82E5F;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #D4849F;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #E75480;
+            box-shadow: 0 0 0 3px rgba(231, 84, 128, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-critical {
+            background: #FFE0E8;
+            color: #B82E5F;
+        }
+
+        .status-moderate {
+            background: #FFF3F9;
+            color: #D4849F;
+        }
+
+        .status-stable {
+            background: #F5D5E3;
+            color: #8B2E5F;
+        }
+
+        /* Responsividade Mobile */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 20px;
+            }
+
+            header p {
+                font-size: 12px;
+            }
+
+            .controls {
+                gap: 8px;
+            }
+
+            button {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+                font-size: 11px;
+            }
+
+            .actions-cell {
+                gap: 4px;
+            }
+
+            .btn-danger,
+            .btn-edit,
+            .btn-save,
+            .btn-cancel {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .modal-header {
+                font-size: 18px;
+            }
+
+            .form-group label {
+                font-size: 12px;
+            }
+
+            .form-group input,
+            .form-group select {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table-wrapper {
+                border-radius: 6px;
+            }
+
+            .empty-state-icon {
+                font-size: 36px;
+            }
+
+            .empty-state p {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            header h1 {
+                font-size: 16px;
+            }
+
+            header p {
+                font-size: 11px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+                font-size: 10px;
+            }
+
+            .actions-cell {
+                flex-direction: column;
+            }
+
+            .btn-danger,
+            .btn-edit,
+            .btn-save,
+            .btn-cancel {
+                width: 100%;
+                padding: 10px;
+                font-size: 10px;
+            }
+
+            .modal {
+                padding: 10px;
+            }
+
+            .modal-content {
+                padding: 15px;
+            }
+
+            .modal-header {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            .form-group {
+                margin-bottom: 12px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .modal-buttons button {
+                width: 100%;
+            }
+
+            .status-badge {
+                padding: 4px 8px;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 DF Star Hospital</h1>
+            <p>Equipe de Neurologia Brasília | Monitoramento de Pacientes em Tempo Real</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="abrirModalRegistro()">📋 Registrar Internação</button>
+            <button class="btn-secondary" onclick="exportarDados()">📊 Exportar Dados</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="tablaPacientes">
+                <thead>
+                    <tr>
+                        <th>Leito</th>
+                        <th>Paciente</th>
+                        <th>Idade</th>
+                        <th>Diagnóstico</th>
+                        <th>Neurologista</th>
+                        <th>Nível Crítico</th>
+                        <th>Último Aviso</th>
+                        <th>Medicação Noturna</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="pacientesBody">
+                    <tr>
+                        <td colspan="10">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📭</div>
+                                <p><strong>Nenhum paciente internado</strong></p>
+                                <p>Clique em "Registrar Internação" para adicionar pacientes</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para Registro/Edição de Pacientes -->
+    <div class="modal" id="modalPaciente">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitulo">Registrar Novo Paciente</div>
+            
+            <form id="formPaciente" onsubmit="salvarPaciente(event)">
+                <div class="form-group">
+                    <label for="leito">Leito *</label>
+                    <input type="text" id="leito" placeholder="Ex: A-101" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="paciente">Nome do Paciente *</label>
+                    <input type="text" id="paciente" placeholder="Ex: João Silva" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="idade">Idade *</label>
+                    <input type="number" id="idade" min="0" max="150" placeholder="Ex: 45" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="diagnostico">Diagnóstico *</label>
+                    <input type="text" id="diagnostico" placeholder="Ex: Insônia Crônica" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="neurologista">Neurologista *</label>
+                    <select id="neurologista" required>
+                        <option value="">Selecione um neurologista</option>
+                        <option value="Dr. Paulo Silva">Dr. Paulo Silva</option>
+                        <option value="Dra. Ana Costa">Dra. Ana Costa</option>
+                        <option value="Dr. Felipe Martins">Dr. Felipe Martins</option>
+                        <option value="Dra. Carla Ribeiro">Dra. Carla Ribeiro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="nivelCritico">Nível Crítico *</label>
+                    <select id="nivelCritico" required>
+                        <option value="">Selecione o nível crítico</option>
+                        <option value="Baixo">Baixo</option>
+                        <option value="Moderado">Moderado</option>
+                        <option value="Alto">Alto</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ultimoAviso">Último Aviso</label>
+                    <input type="datetime-local" id="ultimoAviso">
+                </div>
+
+                <div class="form-group">
+                    <label for="medicacao">Medicação Noturna</label>
+                    <input type="text" id="medicacao" placeholder="Ex: Melatonina 5mg + Zolpidem 10mg">
+                </div>
+
+                <div class="form-group">
+                    <label for="statusPaciente">Status *</label>
+                    <select id="statusPaciente" required>
+                        <option value="">Selecione o status</option>
+                        <option value="Crítico">Crítico</option>
+                        <option value="Moderado">Moderado</option>
+                        <option value="Estável">Estável</option>
+                    </select>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Salvar Paciente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let pacientes = JSON.parse(localStorage.getItem('pacientes')) || [];
+        let editandoIndice = null;
+
+        // Inicializa a página
+        function inicializar() {
+            renderizarTabela();
+        }
+
+        // Renderiza a tabela com pacientes
+        function renderizarTabela() {
+            const tbody = document.getElementById('pacientesBody');
+            
+            if (pacientes.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📭</div>
+                                <p><strong>Nenhum paciente internado</strong></p>
+                                <p>Clique em "Registrar Internação" para adicionar pacientes</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = pacientes.map((p, i) => `
+                <tr>
+                    <td>${p.leito}</td>
+                    <td>${p.paciente}</td>
+                    <td>${p.idade}</td>
+                    <td>${p.diagnostico}</td>
+                    <td>${p.neurologista}</td>
+                    <td>${p.nivelCritico}</td>
+                    <td>${p.ultimoAviso || '-'}</td>
+                    <td>${p.medicacao || '-'}</td>
+                    <td><span class="status-badge status-${p.statusPaciente.toLowerCase()}">${p.statusPaciente}</span></td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn-edit" onclick="editarPaciente(${i})">✏️ Editar</button>
+                            <button class="btn-danger" onclick="confirmarExclusao(${i})">🗑️ Deletar</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Abre modal para novo registro
+        function abrirModalRegistro() {
+            editandoIndice = null;
+            document.getElementById('modalTitulo').textContent = 'Registrar Novo Paciente';
+            document.getElementById('formPaciente').reset();
+            document.getElementById('modalPaciente').classList.add('active');
+        }
+
+        // Abre modal para edição
+        function editarPaciente(indice) {
+            editandoIndice = indice;
+            const p = pacientes[indice];
+            
+            document.getElementById('modalTitulo').textContent = 'Editar Paciente';
+            document.getElementById('leito').value = p.leito;
+            document.getElementById('paciente').value = p.paciente;
+            document.getElementById('idade').value = p.idade;
+            document.getElementById('diagnostico').value = p.diagnostico;
+            document.getElementById('neurologista').value = p.neurologista;
+            document.getElementById('nivelCritico').value = p.nivelCritico;
+            document.getElementById('ultimoAviso').value = p.ultimoAviso || '';
+            document.getElementById('medicacao').value = p.medicacao || '';
+            document.getElementById('statusPaciente').value = p.statusPaciente;
+            
+            document.getElementById('modalPaciente').classList.add('active');
+        }
+
+        // Fecha o modal
+        function fecharModal() {
+            document.getElementById('modalPaciente').classList.remove('active');
+            editandoIndice = null;
+        }
+
+        // Salva paciente (novo ou editado)
+        function salvarPaciente(event) {
+            event.preventDefault();
+
+            const paciente = {
+                leito: document.getElementById('leito').value,
+                paciente: document.getElementById('paciente').value,
+                idade: document.getElementById('idade').value,
+                diagnostico: document.getElementById('diagnostico').value,
+                neurologista: document.getElementById('neurologista').value,
+                nivelCritico: document.getElementById('nivelCritico').value,
+                ultimoAviso: document.getElementById('ultimoAviso').value,
+                medicacao: document.getElementById('medicacao').value,
+                statusPaciente: document.getElementById('statusPaciente').value
+            };
+
+            if (editandoIndice !== null) {
+                pacientes[editandoIndice] = paciente;
+            } else {
+                pacientes.push(paciente);
+            }
+
+            localStorage.setItem('pacientes', JSON.stringify(pacientes));
+            renderizarTabela();
+            fecharModal();
+        }
+
+        // Confirma exclusão
+        function confirmarExclusao(indice) {
+            if (confirm(`Tem certeza que deseja deletar o paciente ${pacientes[indice].paciente}?`)) {
+                excluirPaciente(indice);
+            }
+        }
+
+        // Exclui paciente
+        function excluirPaciente(indice) {
+            pacientes.splice(indice, 1);
+            localStorage.setItem('pacientes', JSON.stringify(pacientes));
+            renderizarTabela();
+        }
+
+        // Exporta dados em CSV
+        function exportarDados() {
+            if (pacientes.length === 0) {
+                alert('Nenhum paciente para exportar!');
+                return;
+            }
+
+            let csv = 'Leito,Paciente,Idade,Diagnóstico,Neurologista,Nível Crítico,Último Aviso,Medicação Noturna,Status\n';
+            pacientes.forEach(p => {
+                csv += `"${p.leito}","${p.paciente}",${p.idade},"${p.diagnostico}","${p.neurologista}","${p.nivelCritico}","${p.ultimoAviso}","${p.medicacao}","${p.statusPaciente}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pacientes_df_star.csv';
+            a.click();
+        }
+
+        // Fecha modal ao clicar fora
+        document.getElementById('modalPaciente').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+
+        // Inicializa ao carregar
+        window.addEventListener('load', inicializar);
+    </script>
+</body>
+</html>
